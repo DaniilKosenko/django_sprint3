@@ -1,5 +1,7 @@
 from django.shortcuts import render
-
+from django.db.models import Q
+from blog.models import Post
+from django.utils.timezone import now
 
 posts = [
     {
@@ -47,7 +49,15 @@ posts = [
 
 def index(request):
     template = 'blog/index.html'
-    context = {'post': posts}
+    post_list = Post.objects.select_related(
+        'author', 'category', 'location',
+    ).filter(
+        is_published=True,
+        pub_date__lt=now(),
+        category__is_published=True,
+    )[:5]
+    context = {
+        'post_list': post_list, }
     return render(request, template, context)
 
 
